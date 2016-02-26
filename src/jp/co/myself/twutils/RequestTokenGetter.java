@@ -22,52 +22,52 @@ public class RequestTokenGetter {
 	private static final String REQUEST_URL = "https://api.twitter.com/oauth/request_token";
 	
 	/**
-	 * 
+	 * リクエストメソッド(POST)です。
 	 */
 	private static final String REQUEST_METHOD = "POST";
 	
 	/**
-	 * 
+	 * リクエストトークン取得用のパラメータ名(コールバックURL)です。
 	 */
 	private static final String OAUTH_CALLBACK = "oauth_callback";
 	
 	/**
-	 * 
+	 * リクエストトークン取得用のパラメータ名(APIキー)です。
 	 */
 	private static final String OAUTH_CONSUMER_KEY = "oauth_consumer_key";
 	
 	/**
-	 * 
+	 * リクエストトークン取得用のパラメータ名(署名の種類)です。
 	 */
 	private static final String OAUTH_SIGNATURE_METHOD = "oauth_signature_method";
 	
 	/**
-	 * 
+	 * リクエストトークン取得用のパラメータ名(タイムスタンプ)です。
 	 */
 	private static final String OAUTH_TIMESTAMP = "oauth_timestamp";
 	
 	/**
-	 * 
+	 * メッセージ認証のアルゴリズム(HMAC-SHA1)です。
 	 */
 	private static final String HMAC_SHA1 = "HMAC-SHA1";
 	
 	/**
-	 * 
+	 * メッセージ認証のアルゴリズム(HMAC-SHA1)です。
 	 */
 	private static final String HMACSHA1 = "HMacSHA1";
 	
 	/**
-	 * 
+	 * リクエストトークン取得用のパラメータ名(ランダム文字列)です。
 	 */
 	private static final String OAUTH_NONCE = "oauth_nonce";
 	
 	/**
-	 * 
+	 * リクエストトークン取得用のパラメータ名(認証時のOAuthのバージョン)です。
 	 */
 	private static final String OAUTH_VERSION = "oauth_version";
 	
 	/**
-	 * 
+	 * OAuthのバージョン(1.0)です。
 	 */
 	private static final String OAUTH_VERISON_1_0 = "1.0";
 	
@@ -154,6 +154,15 @@ public class RequestTokenGetter {
 		return URLEncoder.encode(str, StandardCharsets.UTF_8.name());
 	}
 	
+	/**
+	 * ハッシュのキーと値の全ペアに、以下の処理を順に実施します。
+	 * 1)ハッシュのキーと値を、文字列で連結します。
+	 * 2)ハッシュのキーと値のペア同士を、文字列で連結します。
+	 * @param hash ハッシュです。
+	 * @param keyValueDelim キーと値の連結する文字列です。
+	 * @param contentDelim キーと値のペア同士を連結する文字列です。
+	 * @return ハッシュのキーと値の全ペアを連結した文字列。
+	 */
 	private static String joinHashMap(HashMap<String, String> hash, String keyValueDelim, String contentDelim) {
 		StringBuilder sb = new StringBuilder();
 		
