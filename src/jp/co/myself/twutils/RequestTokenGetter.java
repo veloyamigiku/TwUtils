@@ -72,6 +72,21 @@ public class RequestTokenGetter {
 	private static final String OAUTH_VERISON_1_0 = "1.0";
 	
 	/**
+	 * OAuthの署名です。
+	 */
+	private static final String OAUTH_SIGNATURE = "oauth_signature";
+	
+	/**
+	 * Authorization(リクエストヘッダ名)です。
+	 */
+	private static final String AUTORIZATION = "Authorization";
+	
+	/**
+	 * OAuth(Authorizationヘッダの値の一部)です。
+	 */
+	private static final String OAUTH = "OAuth";
+	
+	/**
 	 * リクエストトークンを取得します。
 	 * @param apiKey APIキーです。
 	 * @param apiSecret API Secretです。
@@ -138,10 +153,19 @@ public class RequestTokenGetter {
 		System.out.println("署名:" + signature);
 		
 		// 4)リクエストトークン取得のHTTPリクエストを送信します。
+		//HttpClient.get("http://www.google.co.jp");
+		HashMap<String, String> requestHeaders = new HashMap<String, String>();
+		try {
+			paramHash.put(OAUTH_CALLBACK, urlEncode(callBackURL));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		paramHash.put(OAUTH_SIGNATURE, signature);
+		requestHeaders.put(AUTORIZATION, OAUTH + " " + joinHashMap(paramHash, "=", ","));
+		HttpClient.post(REQUEST_URL, requestHeaders);
 		
-		
-		return requestToken;
-		
+		return requestToken;	
 	}
 	
 	/**
