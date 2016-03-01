@@ -7,6 +7,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -25,11 +27,6 @@ public class RequestTokenGetter {
 	 * リクエストメソッド(POST)です。
 	 */
 	private static final String REQUEST_METHOD = "POST";
-	
-	/**
-	 * リクエストトークン取得用のパラメータ名(コールバックURL)です。
-	 */
-	private static final String OAUTH_CALLBACK = "oauth_callback";
 	
 	/**
 	 * リクエストトークン取得用のパラメータ名(APIキー)です。
@@ -104,18 +101,17 @@ public class RequestTokenGetter {
 		try {
 			encodeApiKey = urlEncode(apiKey);
 			encodeApiSecret = urlEncode(apiSecret);
-			signatureKey = encodeApiSecret + "&" + encodeApiKey;
+			signatureKey = encodeApiSecret + "&" + urlEncode("");
 		} catch (UnsupportedEncodingException e) {
 			return requestToken;
 		}
 		// debug code
-		System.out.println("署名作成用のキー:" + signatureKey);
+		//System.out.println("署名作成用のキー:" + signatureKey);
 		
 		// 2)署名作成用のデータを生成します。
 		long timeMsec = System.currentTimeMillis();
 		long timeSec = timeMsec / 1000;
 		HashMap<String, String> paramHash = new HashMap<String, String>();
-		paramHash.put(OAUTH_CALLBACK, callBackURL);
 		paramHash.put(OAUTH_CONSUMER_KEY, encodeApiKey);
 		paramHash.put(OAUTH_SIGNATURE_METHOD, HMAC_SHA1);
 		paramHash.put(OAUTH_TIMESTAMP, String.valueOf(timeSec));
@@ -131,7 +127,7 @@ public class RequestTokenGetter {
 		}
 		
 		// debug code
-		System.out.println("署名作成用のデータ:" + data);
+		//System.out.println("署名作成用のデータ:" + data);
 		
 		// 3)署名を作成します。
 		String signature = null;
@@ -141,7 +137,7 @@ public class RequestTokenGetter {
 			SecretKeySpec sks = new SecretKeySpec(signatureKey.getBytes(), HMACSHA1);
 			mac.init(sks);
 			// メッセージ認証コードを取得します。
-			byte[] macByteAry = mac.doFinal();
+			byte[] macByteAry = mac.doFinal(data.getBytes());
 			// メッセージ認証コードをBase64形式でエンコードします。
 			signature = Base64.getEncoder().encodeToString(macByteAry);
 		} catch (NoSuchAlgorithmException e) {
@@ -150,18 +146,15 @@ public class RequestTokenGetter {
 			return requestToken;
 		}
 		// debug code
-		System.out.println("署名:" + signature);
+		//System.out.println("署名:" + signature);
 		
 		// 4)リクエストトークン取得のHTTPリクエストを送信します。
-		//HttpClient.get("http://www.google.co.jp");
 		HashMap<String, String> requestHeaders = new HashMap<String, String>();
 		try {
-			paramHash.put(OAUTH_CALLBACK, urlEncode(callBackURL));
+			paramHash.put(OAUTH_SIGNATURE, urlEncode(signature));
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		paramHash.put(OAUTH_SIGNATURE, signature);
 		requestHeaders.put(AUTORIZATION, OAUTH + " " + joinHashMap(paramHash, "=", ","));
 		HttpClient.post(REQUEST_URL, requestHeaders);
 		
@@ -190,7 +183,12 @@ public class RequestTokenGetter {
 	private static String joinHashMap(HashMap<String, String> hash, String keyValueDelim, String contentDelim) {
 		StringBuilder sb = new StringBuilder();
 		
+		// ハッシュのキー名でソートして、コレクションに追加します。
+		Set<String> set = new TreeSet<String>(new MyComparator());
 		for (String key : hash.keySet()) {
+			set.add(key);
+		}
+		for (String key : set) {
 			sb.append(key + keyValueDelim + hash.get(key) + contentDelim);
 		}
 		
